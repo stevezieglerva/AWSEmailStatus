@@ -26,6 +26,12 @@ echo ^<pre^> >> stats.html
 call aws es list-domain-names --output text  >> stats.html
 echo ^</pre^> >> stats.html
 
+echo ^<h1^>SQS^</h1^> >> stats.html
+echo ^<pre^> >> stats.html
+call aws sqs list-queues >> stats.html
+echo ^</pre^> >> stats.html
+
+
 REM Send the email via AWS SES
 aws ses send-email --from %ses_email% --to %ses_email% --subject "AWS Setup %date% %time%" --html file://stats.html
 
