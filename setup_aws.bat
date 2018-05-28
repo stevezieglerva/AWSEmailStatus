@@ -31,6 +31,11 @@ echo ^<pre^> >> stats.html
 call aws sqs list-queues >> stats.html
 echo ^</pre^> >> stats.html
 
+echo ^<h1^>Lambda^</h1^> >> stats.html
+echo ^<pre^> >> stats.html
+call aws lambda list-functions >> stats.html
+echo ^</pre^> >> stats.html
+
 
 REM Send the email via AWS SES
 aws ses send-email --from %ses_email% --to %ses_email% --subject "AWS Setup %date% %time%" --html file://stats.html
