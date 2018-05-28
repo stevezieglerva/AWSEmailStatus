@@ -2,27 +2,32 @@ echo off
 Title AWS
 color 2f
 
+REM Check if the ses_email variable is set (Ex: first.last@email.com)
 if "%ses_email%"=="" goto error
 
+REM Create the HTML of the email
+echo ^<h1^>AWS Users^</h1^> > stats.html
+echo ^<pre^> >> stats.html
+call aws iam list-users --output text  >> stats.html
+echo ^</pre^> >> stats.html
 
-echo *** > stats.txt
-echo *** AWS Users >> stats.txt
-call aws iam list-users --output text  >> stats.txt
+echo ^<h1^>S3 Buckets^</h1^> >> stats.html
+echo ^<pre^> >> stats.html
+call aws s3 ls  >> stats.html
+echo ^</pre^> >> stats.html
 
-echo ***  >> stats.txt
-echo *** S3 Buckets  >> stats.txt
-call aws s3 ls  >> stats.txt
+echo ^<h1^>Running EC2 Instances^</h1^> >> stats.html
+echo ^<pre^> >> stats.html
+call aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" --query "Reservations[*].Instances[*].[ImageId,Tags[*],State[*]]"  --output text  >> stats.html
+echo ^</pre^> >> stats.html
 
-echo ***  >> stats.txt
-echo *** Running EC2 instance  >> stats.txt
-call aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" --query "Reservations[*].Instances[*].[ImageId,Tags[*],State[*]]"  --output text  >> stats.txt
+echo ^<h1^>Elasticsearch Domains^</h1^> >> stats.html
+echo ^<pre^> >> stats.html
+call aws es list-domain-names --output text  >> stats.html
+echo ^</pre^> >> stats.html
 
-echo ***  >> stats.txt
-echo *** Elasticsearch Domains  >> stats.txt
-call aws es list-domain-names --output text  >> stats.txt
-
-
-aws ses send-email --from %ses_email% --to %ses_email% --subject "Testing %date% %time%" --text file://stats.txt
+REM Send the email via AWS SES
+aws ses send-email --from %ses_email% --to %ses_email% --subject "AWS Setup %date% %time%" --html file://stats.html
 
 goto end
 
